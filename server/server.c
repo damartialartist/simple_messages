@@ -20,9 +20,7 @@ int main() {
 	printf("Waiting for connection...\n");
 
 	userSet users;
-	users.max_users = 100;
-	users.users = (user*)(malloc(sizeof(users) * users.max_users));
-
+	memset(&users,0, sizeof(userSet));
 	fd_set reads;
 	int currentSocket;
 	
@@ -38,9 +36,10 @@ int main() {
 		}
 
 		for(currentSocket = 0; currentSocket <= max_socket + 1; ++currentSocket) {
-			if (FD_ISSET(currentSocket, &reads)) {
-				if (currentSocket == 0) {
-					printf("detected\n");
+
+			if (FD_ISSET(currentSocket, &reads)) { 
+				if (currentSocket == 0) { // SYSTEM INPUT DETECTED
+					PrintMessage("Message from console:\n");
 					char msg[4096];
 					if (!fgets(msg, 4096, stdin)) break;
 
@@ -49,17 +48,14 @@ int main() {
 						break;
 					}
 
-				} else if (currentSocket == serverSocket) {
+				} else if (currentSocket == serverSocket) { // NEW USER CONNECTED 
 					struct sockaddr_storage client_address;
 					socklen_t client_len = sizeof(client_address);
 					int socket_client = accept(currentSocket, (struct sockaddr*) &client_address, &client_len);
-
 					if (currentSocket < 0) {
 						PrintError("Adding socket_client",errno);
 					}
-
 					FD_SET(socket_client, &master);
-
 					if (socket_client> max_socket) {
 						max_socket = socket_client;
 					}
@@ -69,16 +65,23 @@ int main() {
 					char address_buffer[100];
 					getnameinfo((struct sockaddr*)&client_address, client_len,
 							address_buffer, sizeof(address_buffer), 0, 0, NI_NUMERICHOST);
+					if (DEBUG_MODE) {
+						printf("New connection from: %s\n", address_buffer);
+						printf("Total number of users: %d\n", users.num_users);
+						for (int i = 0; i < users.num_users; ++i) {
+							printf("%s\n", (users.users[i]).userName);
+							printf("%d\n", users.users[i].fd);
+							printf("-------------------\n");
+						}
+					}
 
-					printf("New connection from %s\n", address_buffer);
-
-				} else {
-					printf("Message received\n");
+				} else { // CONNECTED USER SENDS MESSAGE
+					PrintMessage("Message from existing user\n");
 					char read[4028];
 					int bytes_received = recv(currentSocket, read, 4028, 0);
 
 					if (bytes_received == 0) {
-						printf("Someone has left\n");
+						PrintMessage("Someone has left\n");
 						RemoveUserBySocket(currentSocket, &users);
 						close(currentSocket);
 						FD_CLR(currentSocket, &master);

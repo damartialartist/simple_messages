@@ -33,28 +33,28 @@ int InitializeServer() {
 
 void AddUserByName(userSet* userSet, int fd, char* username) {
 	if (userSet->num_users >= userSet->max_users) {
-		user* newPtr = realloc(userSet->users, userSet->max_users + 100);
+		user* newPtr = realloc(userSet->users, sizeof(user)* (userSet->max_users + 100));
 		userSet->max_users = userSet->max_users + 100;
 		if (newPtr != NULL) {
 			userSet->users = newPtr;
 		} else {
 			PrintError("add_user",errno);
 		}
-
-	} else {
-		user* currentUser = &(userSet->users[userSet->num_users - 1]);
-		strcpy(currentUser->userName, username);
-		currentUser->fd = fd;
 	}
+	++userSet->num_users;
+	user* currentUser = &(userSet->users[userSet->num_users - 1]);
+	strcpy(currentUser->userName, username);
+	currentUser->fd = fd;
+	return;
 }
 
 void RemoveUserBySocket(int socket, userSet* userSet) {
 	user* currentUser;
 	for (int i = 0; i < userSet->num_users; ++i) {
-		currentUser = &userSet->users[i];
+		currentUser = &(userSet->users[i]);
 		if (currentUser->fd == socket) {
 			for(int j = i; j < (userSet->num_users - 1); ++j) {
-				strcpy(userSet->users[j].userName,userSet->users[j+1].userName);
+				strcpy(userSet->users[j].userName, userSet->users[j+1].userName);
 				userSet->users[j].fd = userSet->users[j+1].fd;
 			}
 		}
