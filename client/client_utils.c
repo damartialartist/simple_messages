@@ -1,5 +1,5 @@
 #include "../common/common_lib.h"
-const char SERVERIP[16] = "127.0.0.1";
+const char SERVERIP[16] = "168.150.42.155";
 const char SERVERPORT[8] = "8765";
 
 int ConnectToServer() {

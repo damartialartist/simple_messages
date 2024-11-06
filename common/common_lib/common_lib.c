@@ -1,4 +1,5 @@
 #include "../common_lib.h"
+#include "cJSON.h"
 
 void PrintError(const char* function, int errorCode) {
 	if (DEBUG_MODE) {
@@ -29,6 +30,8 @@ cJSON* create_msg_packet(char* origin, char* recipient, JSON_ACTIONS action, cha
 		cJSON* data = cJSON_CreateObject();
 		switch (action) {
 			case MESSAGE:
+				cJSON_AddNumberToObject(data,"type", action);
+				cJSON_AddStringToObject(data,"content", msg);
 				break;
 			case REGISTER:
 				break;
