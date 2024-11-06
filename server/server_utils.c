@@ -44,12 +44,20 @@ void CreateMasterFdSet(fd_set* masterfd, int socket) {
 	return;
 }
 
-void AddUserByName(userSet* userSet, int fd, char* username) {
+int AddUserByName(userSet* userSet, int fd, char* username) {
+	user* userIterator;
+
+	for (int i = 0; i < userSet->num_users; ++i) {
+		userIterator = &(userSet->users[i]);
+		if (strcmp(userIterator->userName, username) == 0) {
+			return -1;
+		}
+	}
 	if (userSet->num_users >= userSet->max_users) {
 		user* newPtr = realloc(userSet->users, sizeof(user)* (userSet->max_users + 100));
-		userSet->max_users = userSet->max_users + 100;
 		if (newPtr != NULL) {
 			userSet->users = newPtr;
+			userSet->max_users = userSet->max_users + 100;
 		} else {
 			PrintError("add_user",errno);
 		}
@@ -58,7 +66,7 @@ void AddUserByName(userSet* userSet, int fd, char* username) {
 	user* currentUser = &(userSet->users[userSet->num_users - 1]);
 	strcpy(currentUser->userName, username);
 	currentUser->fd = fd;
-	return;
+	return 0;
 }
 
 void RemoveUserBySocket(int socket, userSet* userSet) {
@@ -94,4 +102,26 @@ struct timeval CreateTimeOut(double seconds) {
 		timeout.tv_sec = (int) seconds;
         timeout.tv_usec = (int) ((int)seconds - seconds) * 1000000;
 		return timeout;
+}
+
+int GetSocketByUserName(char* userName, userSet* userSet) {
+	user* currentUser = NULL;
+	for (int i = 0; i < userSet->num_users; ++i) {
+		currentUser = &(userSet->users[i]);
+		if (strcmp(userName,currentUser->userName) == 0) {
+			return currentUser->fd;
+		}
+	}
+	return -1;	
+}
+
+char* GetUsernameBySocket(int socket, userSet* userSet){
+	user* currentUser = NULL;
+	for (int i = 0; i < userSet->num_users; ++i) {
+		currentUser = &(userSet->users[i]);
+		if (currentUser->fd == socket) {
+			return currentUser->userName;
+		}
+	}
+	return NULL;	
 }

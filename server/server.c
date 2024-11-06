@@ -1,7 +1,9 @@
 #include "../common/common_lib.h"
 #include "server_utils.h"
+#include "server_requests.h"
 
 int main() {
+	system("clear");
 	int currentSocket;
 	int serverSocket;
 	printf("Starting up Server\n");
@@ -89,14 +91,15 @@ int main() {
 				} else { // CONNECTED USER SENDS MESSAGE
 					PrintMessage("Message from existing user\n");
 					char* msg = GetMessageFromClient(currentSocket);
+					char* userName = GetUsernameBySocket(currentSocket, &users);
 
 					if (msg == NULL) {
-						PrintMessage("Someone has left\n");
+						if (DEBUG_MODE) printf("%s has left the server\n",userName);
 						RemoveUserBySocket(currentSocket, &users);
 						close(currentSocket);
 						FD_CLR(currentSocket, &master);
 					} else {
-						printf("%s",msg);
+						printf("%s: %s",userName, msg);
 					}
 
 					free(msg);

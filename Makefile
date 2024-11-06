@@ -8,7 +8,7 @@ SERVERD = server
 COMMOND = common/common_lib
 
 CLIENT_SRC = $(CLIENTD)/client.c $(CLIENTD)/client_utils.c $(COMMOND)/common_lib.c $(COMMOND)/cJSON.c
-SERVER_SRC = $(SERVERD)/server.c $(SERVERD)/server_utils.c $(COMMOND)/common_lib.c $(COMMOND)/cJSON.c
+SERVER_SRC = $(SERVERD)/server.c $(SERVERD)/server_utils.c $(SERVERD)/server_requests.c $(COMMOND)/common_lib.c $(COMMOND)/cJSON.c
 CLIENT_OBJ = $(CLIENT_SRC:.c=.o)
 SERVER_OBJ = $(SERVER_SRC:.c=.o)
 
