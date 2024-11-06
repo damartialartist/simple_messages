@@ -37,7 +37,36 @@ int ConnectToServer() {
 	}
 
 	printf("Connection successful.\n");
-	free(serverAddress);
+	freeaddrinfo(serverAddress);
 
 	return serverSocket;
+}
+
+void CreateMasterFdSet(fd_set* masterfd, int socket) {
+	FD_ZERO(masterfd);
+	FD_SET(socket, masterfd);
+	FD_SET(0, masterfd);
+	return;
+}
+
+struct timeval CreateTimeOut(double seconds) {
+		struct timeval timeout;
+		timeout.tv_sec = (int) seconds;
+        timeout.tv_usec = (int) ((int)seconds - seconds) * 1000000;
+		return timeout;
+}
+
+char* GetMessageFromServer(int serverSocket) {
+	int msgBufferSize = 4096;
+	char* msg = (char*) malloc(sizeof(char) * msgBufferSize);
+	int bytes_received = recv(serverSocket, msg, 4096, 0);
+	if (bytes_received < 1) {
+		printf("Connection closed by peer.\n");
+		free(msg);
+		msg = NULL;
+		return msg;
+	} 
+
+	msg[bytes_received] = '\0';
+	return msg;	
 }

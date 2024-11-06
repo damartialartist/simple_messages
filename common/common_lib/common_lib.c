@@ -14,3 +14,6 @@ void PrintMessage(const char* msg) {
 	return;	
 }
 
+void clearInputBuffer() {
+	while ((getchar()) != '\n');
+}

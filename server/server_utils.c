@@ -31,6 +31,19 @@ int InitializeServer() {
 	return serverSocket;
 }
 
+int AcceptNewConnection(struct sockaddr_storage* clientAddress, int serverSocket) {
+	socklen_t client_len = sizeof(struct sockaddr_storage);
+	int socket_client = accept(serverSocket, (struct sockaddr*) clientAddress, &client_len);
+	return socket_client;
+}
+
+void CreateMasterFdSet(fd_set* masterfd, int socket) {
+	FD_ZERO(masterfd);
+	FD_SET(socket, masterfd);
+	FD_SET(0, masterfd);
+	return;
+}
+
 void AddUserByName(userSet* userSet, int fd, char* username) {
 	if (userSet->num_users >= userSet->max_users) {
 		user* newPtr = realloc(userSet->users, sizeof(user)* (userSet->max_users + 100));
@@ -60,4 +73,25 @@ void RemoveUserBySocket(int socket, userSet* userSet) {
 		}
 	}
 	
+}
+
+char* GetMessageFromClient(int clientSocket) {
+	int msgBufferSize = 4096;
+	char* msg = (char*) malloc(sizeof(char) * msgBufferSize);
+	int bytes_received = recv(clientSocket, msg, 4096, 0);
+	if (bytes_received < 1) {
+		printf("Connection closed by peer.\n");
+		free(msg);
+		msg = NULL;
+		return msg;	
+	} 
+	msg[bytes_received] = '\0';
+	return msg;	
+}
+
+struct timeval CreateTimeOut(double seconds) {
+		struct timeval timeout;
+		timeout.tv_sec = (int) seconds;
+        timeout.tv_usec = (int) ((int)seconds - seconds) * 1000000;
+		return timeout;
 }
