@@ -1,6 +1,6 @@
 #include "../common/common_lib.h"
-const char SERVERIP[16] = "168.150.42.155";
-const char SERVERPORT[8] = "8765";
+const char SERVERIP[128] = "4.tcp.us-cal-1.ngrok.io";
+const char SERVERPORT[8] = "15732";
 
 int ConnectToServer() {
 	PrintMessage("In ConnectToServer");

@@ -10,7 +10,7 @@ int InitializeServer() {
 	hints.ai_flags = AI_PASSIVE;
 
 	struct addrinfo *bindAddress;
-	if (getaddrinfo(0, "8765", &hints, &bindAddress) != 0) {
+	if (getaddrinfo(0, "8085", &hints, &bindAddress) != 0) {
 		PrintError("getaddrinfo", errno);
 	}
 
