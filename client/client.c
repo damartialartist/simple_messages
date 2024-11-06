@@ -9,7 +9,9 @@ int main() {
 	FD_SET(serverSocket, &masterfd);
 	FD_SET(0, &masterfd);
 	fd_set readfd;
-	 while(1) {
+	bool doRun = true;
+
+	 while(doRun) {
         readfd = masterfd;
 
         struct timeval timeout;
@@ -35,9 +37,16 @@ int main() {
         if(FD_ISSET(0, &readfd)) {
 			char msg[4096];
             if (!fgets(msg, 4096, stdin)) break;
+			printf("MSG = %s", msg);
+			if (strcmp(msg, "q\n") == 0) {
+				printf("Closing\n");
+				close(serverSocket);
+				doRun = false;
+				break;
+			}
             int bytes_sent = send(serverSocket, msg, strlen(msg), 0);
 
-			if (bytes_sent <= 0) {
+			if (bytes_sent <= 1) {
 				PrintError("Send failed", errno);
 			}
 

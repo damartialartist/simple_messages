@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "common_lib/cJSON.h"
-#define DEBUG_MODE false
+#define DEBUG_MODE true
 void PrintError(const char* function, int errorCode);
 void PrintMessage(const char* msg);
 

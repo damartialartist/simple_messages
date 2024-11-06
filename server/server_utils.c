@@ -10,7 +10,7 @@ int InitializeServer() {
 	hints.ai_flags = AI_PASSIVE;
 
 	struct addrinfo *bindAddress;
-	if (getaddrinfo(0, "8085", &hints, &bindAddress) != 0) {
+	if (getaddrinfo(0, "8765", &hints, &bindAddress) != 0) {
 		PrintError("getaddrinfo", errno);
 	}
 
@@ -31,7 +31,7 @@ int InitializeServer() {
 	return serverSocket;
 }
 
-void add_user(userSet* userSet, int fd, char* username) {
+void AddUserByName(userSet* userSet, int fd, char* username) {
 	if (userSet->num_users >= userSet->max_users) {
 		user* newPtr = realloc(userSet->users, userSet->max_users + 100);
 		userSet->max_users = userSet->max_users + 100;
@@ -48,7 +48,7 @@ void add_user(userSet* userSet, int fd, char* username) {
 	}
 }
 
-void removeUserBySocket(int socket, userSet* userSet) {
+void RemoveUserBySocket(int socket, userSet* userSet) {
 	user* currentUser;
 	for (int i = 0; i < userSet->num_users; ++i) {
 		currentUser = &userSet->users[i];
