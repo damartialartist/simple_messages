@@ -91,7 +91,7 @@ int main() {
 						int code = ActionMessage(origin,recipient,action,data, &users);
 						if (code < 1) {
 							PrintMessage("Message send Error");
-							cJSON* clientErr = CreateMsgPacket("server",cUsername, ERROR, "Invalid Message Sent\n");
+							cJSON* clientErr = CreateMsgPacket("server",cUsername, ERROR, "Invalid Message sent, check recipient name. \n");
 							char* cClientErr = cJSON_PrintUnformatted(clientErr);
 							if (send(currentSocket,cClientErr,strlen(cClientErr),0) < 0) {
 								PrintMessage("ERROR: Sending error to client with invalid responses\n");

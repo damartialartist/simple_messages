@@ -1,8 +1,5 @@
 #include "../common/common_lib.h"
-const char SERVERIP[128] = "127.0.0.1";
-const char SERVERPORT[8] = "8085";
-
-int ConnectToServer() {
+int ConnectToServer(char* SERVERIP, char* SERVERPORT) {
 	PrintMessage("In ConnectToServer");
 
 	struct addrinfo hints;

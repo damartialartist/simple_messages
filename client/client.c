@@ -2,19 +2,27 @@
 #include "client_utils.h"
 
 int main() {
+	char SERVERIP[128] = "127.0.0.1";
+	char SERVERPORT[8] = "8085";
+
 	fd_set readfd;
 	char username[32];
 	fd_set masterfd;
 	int serverSocket;
 	struct timeval timeout;
 	double timeoutSeconds = 0.01;
+
 	system("clear");
+	printf("Enter provided ip-addr\n");
+	scanf("%s", SERVERIP);
+	printf("Enter provided port addr\n");
+	scanf("%s", SERVERPORT);
 
 	printf("Enter desired username\n");
 	scanf("%s", username);
 	clearInputBuffer();
 
-	serverSocket = ConnectToServer();
+	serverSocket = ConnectToServer(SERVERIP,SERVERPORT);
 
 	if (RegisterUser(serverSocket, username) < 0) {
 		PrintError("Register",errno);
