@@ -34,14 +34,7 @@ cJSON* CreateMsgPacket(char* origin, char* recipient, JSON_ACTIONS action, char*
 				cJSON_AddStringToObject(data,"content", msg);
 				break;
 			case REGISTER:
-			case LOGIN:
 				cJSON_AddStringToObject(data,"password", msg);
-				break;
-			case SEND_FRIEND_REQUEST:
-				cJSON_AddStringToObject(data,"user", msg);
-				break;
-			case REQUEST_RESPONSE:
-				cJSON_AddStringToObject(data,"response", msg);
 				break;
 			default:
 				printf("Unknown action\n");

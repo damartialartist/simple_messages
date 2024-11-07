@@ -23,9 +23,6 @@ typedef enum {
 	EXIT = 0,
 	MESSAGE = 1,
 	REGISTER = 2,
-	LOGIN = 3,
-	SEND_FRIEND_REQUEST = 4,
-	REQUEST_RESPONSE = 5,
 	ERROR = 6
 } JSON_ACTIONS;
 void PrintError(const char* function, int errorCode);

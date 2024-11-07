@@ -1,6 +1,7 @@
 #include "../common/common_lib.h"
 #include "client_utils.h"
 
+
 int main() {
 	char SERVERIP[128] = "127.0.0.1";
 	char SERVERPORT[8] = "8085";
@@ -102,14 +103,8 @@ int main() {
 				}
 				free(messageToSend);
 				cJSON_Delete(jsonMessage);
-			} else if (strcmp(cmd, "/r") ==0) {
-				cJSON* jsonMessage = CreateMsgPacket(username, "server", REGISTER, "");
-				char* messageToSend = cJSON_PrintUnformatted(jsonMessage);
-				if(send(serverSocket, messageToSend,strlen(messageToSend),0) < -1) {
-					PrintError("Register",errno);
-				}
-				free(messageToSend);
-				cJSON_Delete(jsonMessage);
+			} else {
+				printf("Unknown Command / wrong formatting\n");
 			}
         }
     } //end while(1)
