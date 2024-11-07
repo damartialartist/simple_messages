@@ -31,6 +31,7 @@ cJSON* CreateMsgPacket(char* origin, char* recipient, JSON_ACTIONS action, char*
 				break;
 			case MESSAGE:
 			case ERROR:
+			case LIST:
 				cJSON_AddStringToObject(data,"content", msg);
 				break;
 			case REGISTER:

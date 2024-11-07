@@ -99,6 +99,20 @@ int main() {
 							free(cClientErr);
 							cJSON_Delete(clientErr);
 						}
+					} else if (cAction == LIST) {
+						char* userList = (char*) malloc(sizeof(char) * 32 * users.num_users);
+						for (int i = 0; i < users.num_users; i++) {
+							strcat(userList, users.users[i].userName);
+							strcat(userList, " \n ");
+						}
+						cJSON* jUserList = CreateMsgPacket("server", cUsername, LIST, userList);
+						char* toSend = cJSON_PrintUnformatted(jUserList);
+						if (send(currentSocket,toSend,strlen(toSend),0) < 0) {
+								PrintMessage("ERROR List\n");
+						}
+						free(userList);
+						free(toSend);
+						cJSON_Delete(jUserList);
 					}
 
 					if (DEBUG_MODE) {

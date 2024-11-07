@@ -33,7 +33,7 @@ int main() {
 	bool doRun = true;
 
 	printf("Type /s <recipient> <message> to send message to someone (case sensitive)\n");
-
+	printf("Type /L to list all active users (case sensitive)\n");
 	while(doRun) {
 		readfd = masterfd;
 		timeout = CreateTimeOut(timeoutSeconds);
@@ -70,7 +70,14 @@ int main() {
 					printf("ERROR: From: %s: %s\n",from,cMsg);
 					free(cMsg);
 				}
-			} else {
+			} else if (cAction == LIST) {
+				char* from = cJSON_GetStringValue(origin);
+				cJSON* content = cJSON_GetObjectItem(data, "content");
+				if (content != NULL) {
+					char* cMsg = cJSON_GetStringValue(content);
+					printf("From:%s:\n List:\n%s \n",from,cMsg);
+				}
+			}else {
 				printf("Unknown action or is not implemented yet\n");
 			}
 			cJSON_Delete(jsonMessage);
@@ -103,8 +110,18 @@ int main() {
 				}
 				free(messageToSend);
 				cJSON_Delete(jsonMessage);
+			} else if (strcmp(cmd, "/L") == 0) {
+				cJSON* jsonMessage = CreateMsgPacket(username, recipient, LIST, message);
+				char* messageToSend = cJSON_PrintUnformatted(jsonMessage);
+				if (send(serverSocket,messageToSend,strlen(messageToSend),0) < -1) {
+					PrintError("Send", errno);
+				}
+				free(messageToSend);
+				cJSON_Delete(jsonMessage);
+
 			} else {
 				printf("Unknown Command / wrong formatting\n");
+
 			}
         }
     } //end while(1)
