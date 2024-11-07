@@ -17,7 +17,10 @@
 #include "common_lib/cJSON.h"
 
 #define DEBUG_MODE true
+
+
 typedef enum {
+	EXIT = 0,
 	MESSAGE = 1,
 	REGISTER = 2,
 	LOGIN = 3,
@@ -26,6 +29,6 @@ typedef enum {
 } JSON_ACTIONS;
 void PrintError(const char* function, int errorCode);
 void PrintMessage(const char* msg);
-cJSON* create_msg_packet(char* origin, char* recipient, JSON_ACTIONS action, char* msg);
+cJSON* CreateMsgPacket(char* origin, char* recipient, JSON_ACTIONS action, char* msg);
 void clearInputBuffer();
 #endif

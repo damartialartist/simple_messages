@@ -19,27 +19,28 @@ void clearInputBuffer() {
 	while ((getchar()) != '\n');
 }
 
-
-
-cJSON* create_msg_packet(char* origin, char* recipient, JSON_ACTIONS action, char* msg) {
+cJSON* CreateMsgPacket(char* origin, char* recipient, JSON_ACTIONS action, char* msg) {
 		cJSON* msg_packet = cJSON_CreateObject();
 		cJSON_AddStringToObject(msg_packet, "origin", origin);
-		cJSON_AddNumberToObject(msg_packet, "recipient", action);
-		cJSON_AddStringToObject(msg_packet, "action", recipient);
+		cJSON_AddStringToObject(msg_packet, "recipient", recipient);
+		cJSON_AddNumberToObject(msg_packet, "action", action);
 
 		cJSON* data = cJSON_CreateObject();
 		switch (action) {
+			case EXIT:
+				break;
 			case MESSAGE:
-				cJSON_AddNumberToObject(data,"type", action);
 				cJSON_AddStringToObject(data,"content", msg);
 				break;
 			case REGISTER:
-				break;
 			case LOGIN:
+				cJSON_AddStringToObject(data,"password", msg);
 				break;
 			case SEND_FRIEND_REQUEST:
+				cJSON_AddStringToObject(data,"user", msg);
 				break;
 			case REQUEST_RESPONSE:
+				cJSON_AddStringToObject(data,"response", msg);
 				break;
 			default:
 				printf("Unknown action\n");
@@ -47,8 +48,7 @@ cJSON* create_msg_packet(char* origin, char* recipient, JSON_ACTIONS action, cha
 				free(data);
 				return NULL;
 		}
-		cJSON_AddStringToObject(msg_packet, "data", msg);
-		cJSON_AddNumberToObject(msg_packet, "msg_length", strlen(msg)); 
-		
+		cJSON_AddItemToObject(msg_packet,"data",data);
+		cJSON_AddNumberToObject(msg_packet, "msg_len", strlen(msg));
 		return msg_packet;
 }

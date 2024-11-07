@@ -22,7 +22,9 @@ int main() {
 	printf("Waiting for connection...\n");
 
 	userSet users;
-	memset(&users,0, sizeof(userSet));
+	users.users = (user*) malloc(sizeof(user) * 100);
+	users.num_users = 0;
+	users.max_users = 100;
 
 	fd_set reads;	
 	bool doRun = true;
@@ -45,7 +47,6 @@ int main() {
 						PrintMessage("Console command failed or is too long\n");
 						break;
 					};
-
 					if(strcmp(msg,"q")) {
 						doRun = false;
 						break;
@@ -54,7 +55,6 @@ int main() {
 				} else if (currentSocket == serverSocket) { // NEW USER CONNECTED 
 					struct sockaddr_storage client_address;
 					int socket_client = AcceptNewConnection(&client_address, currentSocket);
-
 					if (currentSocket < 0) {
 						PrintError("Adding socket_client",errno);
 					}
@@ -62,22 +62,50 @@ int main() {
 					if (socket_client> max_socket) {
 						max_socket = socket_client;
 					}
-
-					char* msg = GetMessageFromClient(socket_client);
-					
-					if( msg != NULL) {
-						AddUserByName(&users, socket_client, msg);
-					} else {
-						AddUserByName(&users, socket_client, "Unknown");
+				} else { // CONNECTED USER SENDS MESSAGE 
+					PrintMessage("Message from existing user\n");
+					cJSON* msg = GetMessageFromClient(currentSocket);
+					if (msg == NULL) {
+						close(currentSocket);
+						FD_CLR(currentSocket, &master);	
+						continue;
 					}
 
-					char address_buffer[100];
-					socklen_t client_len = sizeof(struct sockaddr_storage);
+					char* cMessage = cJSON_Print(msg);
+					printf("%s", cMessage);
+					free(cMessage);
+					cMessage = NULL;
+					cJSON* origin = NULL, *recipient=NULL, *action=NULL, *data=NULL, *msg_len = NULL;
+					UnpackJSON(msg, &origin, &recipient, &action, &data, &msg_len);
+					JSON_ACTIONS cAction = action->valueint; 
+					char* cUsername = cJSON_GetStringValue(origin);
+					char* cRecipient = cJSON_GetStringValue(recipient);
 
-					getnameinfo((struct sockaddr*)&client_address, client_len,
-							address_buffer, sizeof(address_buffer), 0, 0, NI_NUMERICHOST);
+					if (cAction == EXIT){
+						RemoveUserBySocket(currentSocket, &users);
+						close(currentSocket);
+						FD_CLR(currentSocket, &master);
+						printf("%s: has left the server\n",cUsername);
+					} else if (cAction == REGISTER) {
+						AddUserByName(&users, currentSocket, cUsername);
+						printf("%s: has joined the server\n", cUsername);
+					} else if (cAction == MESSAGE) {
+						cJSON* content = cJSON_GetObjectItem(data, "content");
+						char* cMsg = cJSON_GetStringValue(content);
+						int sock = GetSocketByUserName(cRecipient, &users);
+						if (sock != -1) {
+							cJSON* newMsg = CreateMsgPacket(cUsername, cRecipient, MESSAGE, cMsg);
+							char* cnewMsg = cJSON_PrintUnformatted(newMsg);
+							int bytesSent = send(sock,cnewMsg,strlen(cnewMsg),0);	
+							if (bytesSent < 1) {
+								PrintMessage("Message send");
+							}
+							free(cnewMsg);
+							cJSON_Delete(newMsg);
+						}
+					}
+
 					if (DEBUG_MODE) {
-						printf("New connection from: %s\n", address_buffer);
 						printf("Total number of users: %d\n", users.num_users);
 						for (int i = 0; i < users.num_users; ++i) {
 							printf("%s : ", (users.users[i]).userName);
@@ -85,29 +113,12 @@ int main() {
 							printf("-------------------\n");
 						}
 					}
-
-					free(msg);
-
-				} else { // CONNECTED USER SENDS MESSAGE
-					PrintMessage("Message from existing user\n");
-					char* msg = GetMessageFromClient(currentSocket);
-					char* userName = GetUsernameBySocket(currentSocket, &users);
-
-					if (msg == NULL) {
-						if (DEBUG_MODE) printf("%s has left the server\n",userName);
-						RemoveUserBySocket(currentSocket, &users);
-						close(currentSocket);
-						FD_CLR(currentSocket, &master);
-					} else {
-						printf("%s: %s",userName, msg);
-					}
-
-					free(msg);
-
+					cJSON_Delete(msg);
 				}
 			} //if FD_ISSET
 		} //for i to max_socket
 	} //while(1)
+	close(serverSocket);
 	free(users.users);
 	return 0;
 }

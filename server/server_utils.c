@@ -46,15 +46,9 @@ void CreateMasterFdSet(fd_set* masterfd, int socket) {
 
 int AddUserByName(userSet* userSet, int fd, char* username) {
 	user* userIterator;
-
-	for (int i = 0; i < userSet->num_users; ++i) {
-		userIterator = &(userSet->users[i]);
-		if (strcmp(userIterator->userName, username) == 0) {
-			return -1;
-		}
-	}
+	
 	if (userSet->num_users >= userSet->max_users) {
-		user* newPtr = realloc(userSet->users, sizeof(user)* (userSet->max_users + 100));
+		user* newPtr = realloc(userSet->users, sizeof(user) * (userSet->max_users + 100));
 		if (newPtr != NULL) {
 			userSet->users = newPtr;
 			userSet->max_users = userSet->max_users + 100;
@@ -62,10 +56,18 @@ int AddUserByName(userSet* userSet, int fd, char* username) {
 			PrintError("add_user",errno);
 		}
 	}
-	++userSet->num_users;
-	user* currentUser = &(userSet->users[userSet->num_users - 1]);
-	strcpy(currentUser->userName, username);
+	
+	for (int i = 0; i < userSet->num_users; ++i) {
+		userIterator = &(userSet->users[i]);
+		if (strcmp(userIterator->userName, username) == 0) {
+			return -1;
+		}
+	}
+
+	user* currentUser = &(userSet->users[userSet->num_users]);
+	strncpy(currentUser->userName, username,32);
 	currentUser->fd = fd;
+	userSet->num_users = userSet->num_users + 1;
 	return 0;
 }
 
@@ -80,21 +82,21 @@ void RemoveUserBySocket(int socket, userSet* userSet) {
 			}
 		}
 	}
+	--userSet->num_users;
 	
 }
 
-char* GetMessageFromClient(int clientSocket) {
-	int msgBufferSize = 4096;
-	char* msg = (char*) malloc(sizeof(char) * msgBufferSize);
-	int bytes_received = recv(clientSocket, msg, 4096, 0);
+cJSON* GetMessageFromClient(int clientSocket) {
+	int msgBufferSize = 8192;
+	char msg[msgBufferSize];
+	int bytes_received = recv(clientSocket, msg, msgBufferSize, 0);
+	msg[bytes_received] = '\0';
 	if (bytes_received < 1) {
 		printf("Connection closed by peer.\n");
-		free(msg);
-		msg = NULL;
-		return msg;	
+		return NULL;	
 	} 
-	msg[bytes_received] = '\0';
-	return msg;	
+	cJSON *jsonMessage = cJSON_Parse(msg);
+	return jsonMessage;	
 }
 
 struct timeval CreateTimeOut(double seconds) {
@@ -124,4 +126,13 @@ char* GetUsernameBySocket(int socket, userSet* userSet){
 		}
 	}
 	return NULL;	
+}
+
+void UnpackJSON(cJSON* msg, cJSON** origin,cJSON** recipient, cJSON** action, cJSON** data, cJSON** len) {
+	*origin = cJSON_GetObjectItem(msg, "origin");
+	*recipient = cJSON_GetObjectItem(msg, "recipient");
+	*action = cJSON_GetObjectItem(msg, "action");
+	*data = cJSON_GetObjectItem(msg, "data");
+	*len = cJSON_GetObjectItem(msg, "msg_len");
+	return;
 }
