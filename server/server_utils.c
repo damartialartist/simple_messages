@@ -128,11 +128,4 @@ char* GetUsernameBySocket(int socket, userSet* userSet){
 	return NULL;	
 }
 
-void UnpackJSON(cJSON* msg, cJSON** origin,cJSON** recipient, cJSON** action, cJSON** data, cJSON** len) {
-	*origin = cJSON_GetObjectItem(msg, "origin");
-	*recipient = cJSON_GetObjectItem(msg, "recipient");
-	*action = cJSON_GetObjectItem(msg, "action");
-	*data = cJSON_GetObjectItem(msg, "data");
-	*len = cJSON_GetObjectItem(msg, "msg_len");
-	return;
-}
+

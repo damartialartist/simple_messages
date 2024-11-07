@@ -25,10 +25,12 @@ typedef enum {
 	REGISTER = 2,
 	LOGIN = 3,
 	SEND_FRIEND_REQUEST = 4,
-	REQUEST_RESPONSE = 5
+	REQUEST_RESPONSE = 5,
+	ERROR = 6
 } JSON_ACTIONS;
 void PrintError(const char* function, int errorCode);
 void PrintMessage(const char* msg);
 cJSON* CreateMsgPacket(char* origin, char* recipient, JSON_ACTIONS action, char* msg);
 void clearInputBuffer();
+void UnpackJSON(cJSON* msg, cJSON** origin,cJSON** recipient, cJSON** action, cJSON** data, cJSON** len);
 #endif

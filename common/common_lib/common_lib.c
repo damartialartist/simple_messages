@@ -30,6 +30,7 @@ cJSON* CreateMsgPacket(char* origin, char* recipient, JSON_ACTIONS action, char*
 			case EXIT:
 				break;
 			case MESSAGE:
+			case ERROR:
 				cJSON_AddStringToObject(data,"content", msg);
 				break;
 			case REGISTER:
@@ -51,4 +52,13 @@ cJSON* CreateMsgPacket(char* origin, char* recipient, JSON_ACTIONS action, char*
 		cJSON_AddItemToObject(msg_packet,"data",data);
 		cJSON_AddNumberToObject(msg_packet, "msg_len", strlen(msg));
 		return msg_packet;
+}
+
+void UnpackJSON(cJSON* msg, cJSON** origin,cJSON** recipient, cJSON** action, cJSON** data, cJSON** len) {
+	*origin = cJSON_GetObjectItem(msg, "origin");
+	*recipient = cJSON_GetObjectItem(msg, "recipient");
+	*action = cJSON_GetObjectItem(msg, "action");
+	*data = cJSON_GetObjectItem(msg, "data");
+	*len = cJSON_GetObjectItem(msg, "msg_len");
+	return;
 }

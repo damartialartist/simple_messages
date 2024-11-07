@@ -66,6 +66,7 @@ int main() {
 					PrintMessage("Message from existing user\n");
 					cJSON* msg = GetMessageFromClient(currentSocket);
 					if (msg == NULL) {
+						RemoveUserBySocket(currentSocket,&users);
 						close(currentSocket);
 						FD_CLR(currentSocket, &master);	
 						continue;
@@ -74,34 +75,29 @@ int main() {
 					char* cMessage = cJSON_Print(msg);
 					printf("%s", cMessage);
 					free(cMessage);
-					cMessage = NULL;
+			
 					cJSON* origin = NULL, *recipient=NULL, *action=NULL, *data=NULL, *msg_len = NULL;
 					UnpackJSON(msg, &origin, &recipient, &action, &data, &msg_len);
 					JSON_ACTIONS cAction = action->valueint; 
 					char* cUsername = cJSON_GetStringValue(origin);
-					char* cRecipient = cJSON_GetStringValue(recipient);
-
+					
 					if (cAction == EXIT){
-						RemoveUserBySocket(currentSocket, &users);
-						close(currentSocket);
-						FD_CLR(currentSocket, &master);
+						ActionExit(currentSocket,&users,&master);
 						printf("%s: has left the server\n",cUsername);
 					} else if (cAction == REGISTER) {
 						AddUserByName(&users, currentSocket, cUsername);
 						printf("%s: has joined the server\n", cUsername);
 					} else if (cAction == MESSAGE) {
-						cJSON* content = cJSON_GetObjectItem(data, "content");
-						char* cMsg = cJSON_GetStringValue(content);
-						int sock = GetSocketByUserName(cRecipient, &users);
-						if (sock != -1) {
-							cJSON* newMsg = CreateMsgPacket(cUsername, cRecipient, MESSAGE, cMsg);
-							char* cnewMsg = cJSON_PrintUnformatted(newMsg);
-							int bytesSent = send(sock,cnewMsg,strlen(cnewMsg),0);	
-							if (bytesSent < 1) {
-								PrintMessage("Message send");
+						int code = ActionMessage(origin,recipient,action,data, &users);
+						if (code < 1) {
+							PrintMessage("Message send Error");
+							cJSON* clientErr = CreateMsgPacket("server",cUsername, ERROR, "Invalid Message Sent\n");
+							char* cClientErr = cJSON_PrintUnformatted(clientErr);
+							if (send(currentSocket,cClientErr,strlen(cClientErr),0) < 0) {
+								PrintMessage("ERROR: Sending error to client with invalid responses\n");
 							}
-							free(cnewMsg);
-							cJSON_Delete(newMsg);
+							free(cClientErr);
+							cJSON_Delete(clientErr);
 						}
 					}
 

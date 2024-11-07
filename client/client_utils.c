@@ -56,17 +56,24 @@ struct timeval CreateTimeOut(double seconds) {
 		return timeout;
 }
 
-char* GetMessageFromServer(int serverSocket) {
-	int msgBufferSize = 4096;
-	char* msg = (char*) malloc(sizeof(char) * msgBufferSize);
-	int bytes_received = recv(serverSocket, msg, 4096, 0);
+cJSON* GetMessageFromServer(int serverSocket) {
+	int msgBufferSize = 8192;
+	char msg[msgBufferSize];
+	int bytes_received = recv(serverSocket, msg, msgBufferSize, 0);
+	msg[bytes_received] = '\0';
 	if (bytes_received < 1) {
 		printf("Connection closed by peer.\n");
-		free(msg);
-		msg = NULL;
-		return msg;
+		return NULL;	
 	} 
+	cJSON *jsonMessage = cJSON_Parse(msg);
+	return jsonMessage;	
+}
 
-	msg[bytes_received] = '\0';
-	return msg;	
+int RegisterUser(int serverSocket, char* userName) {
+	cJSON* jsonMessage = CreateMsgPacket(userName, "server", REGISTER, userName);
+	char* msg = cJSON_PrintUnformatted(jsonMessage);
+	int bytes_sent = send(serverSocket, msg, strlen(msg),0);
+	cJSON_Delete(jsonMessage);
+	
+	return bytes_sent;
 }

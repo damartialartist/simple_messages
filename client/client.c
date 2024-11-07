@@ -1,15 +1,6 @@
 #include "../common/common_lib.h"
 #include "client_utils.h"
 
-int RegisterUser(int serverSocket, char* userName) {
-	cJSON* jsonMessage = CreateMsgPacket(userName, "server", REGISTER, userName);
-	char* msg = cJSON_PrintUnformatted(jsonMessage);
-	int bytes_sent = send(serverSocket, msg, strlen(msg),0);
-	cJSON_Delete(jsonMessage);
-	
-	return bytes_sent;
-}
-
 int main() {
 	fd_set readfd;
 	char username[32];
@@ -22,7 +13,6 @@ int main() {
 	printf("Enter desired username\n");
 	scanf("%s", username);
 	clearInputBuffer();
-
 
 	serverSocket = ConnectToServer();
 
@@ -45,9 +35,36 @@ int main() {
 		}
 
 		if (FD_ISSET(serverSocket, &readfd)) {
-			char* msg = GetMessageFromServer(serverSocket);
-			printf("Received msg from server: \"%s\"\n", msg);
-			free(msg);
+			cJSON* jsonMessage = GetMessageFromServer(serverSocket);
+			if (jsonMessage == NULL) {
+				cJSON_Delete(jsonMessage);
+				doRun = false;
+				continue;
+			}
+			cJSON* origin = NULL, *recipient=NULL, *action=NULL, *data=NULL, *msg_len = NULL;
+			UnpackJSON(jsonMessage, &origin, &recipient, &action, &data, &msg_len);
+			JSON_ACTIONS cAction = action->valueint;
+
+			if (cAction == MESSAGE) {
+				char* from = cJSON_GetStringValue(origin);
+				cJSON* content = cJSON_GetObjectItem(data, "content");
+				if (content != NULL) {
+					char* cMsg = cJSON_Print(content);
+					printf("%s: %s\n",from,cMsg);
+					free(cMsg);
+				}
+			} else if (cAction == ERROR) {
+				char* from = cJSON_GetStringValue(origin);
+				cJSON* content = cJSON_GetObjectItem(data, "content");
+				if (content != NULL) {
+					char* cMsg = cJSON_Print(content);
+					printf("ERROR: From: %s: %s\n",from,cMsg);
+					free(cMsg);
+				}
+			} else {
+				printf("Unknown action or is not implemented yet\n");
+			}
+			cJSON_Delete(jsonMessage);
 			continue;
 		}
 

@@ -5,5 +5,6 @@ int ConnectToServer();
 
 void CreateMasterFdSet(fd_set* masterfd, int socket);
 struct timeval CreateTimeOut(double seconds);
-char* GetMessageFromServer(int serverSocket);
+cJSON* GetMessageFromServer(int serverSocket);
+int RegisterUser(int clientSocket, char* userName);
 #endif

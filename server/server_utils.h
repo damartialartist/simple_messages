@@ -21,5 +21,5 @@ int GetSocketByUserName(char* userName, userSet* userSet);
 char* GetUsernameBySocket(int socket, userSet* userSet);
 struct timeval CreateTimeOut(double seconds);
 int AcceptNewConnection(struct sockaddr_storage* clientAddress, int serverSocket);
-void UnpackJSON(cJSON* msg, cJSON** origin,cJSON** recipient, cJSON** action, cJSON** data, cJSON** len);
+
 #endif
