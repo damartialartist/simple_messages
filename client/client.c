@@ -13,7 +13,7 @@ int main() {
 	double timeoutSeconds = 0.01;
 
 	system("clear");
-	printf("Enter provided ip-addr\n");
+	printf("Enter provided ip-addr, this will change every time\n");
 	scanf("%s", SERVERIP);
 	printf("Enter provided port addr\n");
 	scanf("%s", SERVERPORT);
